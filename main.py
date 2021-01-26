@@ -33,15 +33,8 @@ def is_2_power(n):
 def invert_poly(f_poly, R_poly, p):
     inv_poly = None
     if is_prime(p):
-        #print("Inverting as p={} is prime".format(p))
+        print("Inverting as p={} is prime".format(p))
         inv_poly = invert(f_poly, R_poly, domain=GF(p))
-    elif is_2_power(p):
-        #print("Inverting as p={} is 2 power".format(p))
-        inv_poly = invert(f_poly, R_poly, domain=GF(2))
-        e = int(math.log(p, 2))
-        for i in range(1, e):
-            #print("Inversion({}): {}".format(i, inv_poly))
-            inv_poly = ((2 * inv_poly - f_poly * inv_poly ** 2) % R_poly).trunc(p)
     else:
         raise Exception("Cannot invert polynomial in Z_{}".format(p))
     #print("Inversion: {}".format(inv_poly))
@@ -68,18 +61,19 @@ print("r = {}".format(r))
 f_p = invert_poly(f, r, p)
 f_q = invert_poly(f, r, q)
 
+f_verif = Poly(x**9 + x**7 + x**5 +2*x**4+2*x**3+2*x**2+x)
+
 print("f_p = {}".format(f_p))
 print("f_q = {}".format(f_q))
 
 #Compute public key h = p * g * f_q (mod q)
-p_fq_g = (p * f_q * g).trunc(q)
-h = (p_fq_g % r).trunc(q)
+h = ((p * f_q * g) % r).trunc(q)
 print("h = {}".format(h))
 
 #encryption
 m = Poly(x**7 - x**4 + x**3 + x + 1, x).set_domain(ZZ)
 random_noise = Poly(-x**9 + x**7 + x**4 - x**3 + 1, x)
-cypher = Poly(((m*h) + random_noise) % r).trunc(q)
+cypher = Poly(((random_noise*h) + m) % r).trunc(q)
 print("cypher = {}".format(cypher))
 
 #decryption
